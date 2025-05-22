@@ -1,0 +1,88 @@
+import React, { useEffect, useState, useRef } from "react";
+
+function App() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 text-center p-4">
+      <h1 className="text-3xl font-bold text-blue-600 mb-6">Stopwatch with Lap Timer</h1>
+      <StopWatch />
+    </div>
+  );
+}
+
+function StopWatch() {
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [laps, setLaps] = useState([]);
+  const intervalRef = useRef(null);
+
+  useEffect(() => {
+    if (isRunning) {
+      intervalRef.current = setInterval(() => {
+        setTime((prevTime) => prevTime + 1);
+      }, 1000);
+    } else {
+      clearInterval(intervalRef.current);
+    }
+
+    return () => clearInterval(intervalRef.current);
+  }, [isRunning]);
+
+  const formatTime = (seconds) => {
+    const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
+    const secs = String(seconds % 60).padStart(2, "0");
+    return `${mins}:${secs}`;
+  };
+
+  const startStopHandler = () => {
+    setIsRunning((prev) => !prev);
+  };
+
+  const lapHandler = () => {
+    setLaps((prevLaps) => [formatTime(time), ...prevLaps]);
+  };
+
+  const resetHandler = () => {
+    setIsRunning(false);
+    setTime(0);
+    setLaps([]);
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-md">
+      <div className="text-4xl font-mono mb-4">{formatTime(time)}</div>
+      <div className="flex justify-center gap-4 mb-4">
+        <button
+          onClick={startStopHandler}
+          className={`px-4 py-2 rounded-lg font-semibold text-white ${
+            isRunning ? "bg-red-500" : "bg-green-500"
+          }`}
+        >
+          {isRunning ? "Stop" : "Start"}
+        </button>
+        <button
+          onClick={lapHandler}
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold"
+          disabled={!isRunning}
+        >
+          Lap
+        </button>
+        <button
+          onClick={resetHandler}
+          className="px-4 py-2 bg-gray-500 text-white rounded-lg font-semibold"
+        >
+          Reset
+        </button>
+      </div>
+
+      <ul className="text-left max-h-48 overflow-y-auto">
+        {laps.map((lap, index) => (
+          <li key={index} className="border-b py-1">
+            Lap {laps.length - index}: {lap}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
